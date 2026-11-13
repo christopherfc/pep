@@ -34,7 +34,9 @@ erDiagram
     CONSULTA ||--o| FATURAMENTO : gera
 ```
 
-Cadastros e relações de muitos para muitos ficam em tabelas próprias, como médico e especialidade ou plano e procedimento. A tabela de agendamento guarda o horário reservado. A tabela de consulta mantém a data e hora de referência copiadas na abertura do atendimento. O valor em `consulta_procedimento` é o preço registrado na inclusão, de modo que mudanças no preço do catálogo preservem o cálculo das consultas anteriores.
+Cadastros e relações de muitos para muitos ficam em tabelas próprias, como médico e especialidade ou plano e procedimento. O telefone da conta pertence a `usuario`. A migração `008_telefone_usuario` recupera o telefone antigo de `medico` quando o usuário ainda não tem telefone e prioriza o valor da conta quando ambos existem.
+
+O agendamento é a fonte da data e da hora reservadas. A consulta guarda a referência histórica copiada na abertura do atendimento, e o faturamento usa a data da consulta. `consulta.id_agendamento` é uma chave alternativa única. O valor em `consulta_procedimento` é o preço registrado na inclusão, de modo que mudanças no catálogo preservem o cálculo das consultas anteriores.
 
 A API lê a visão `agenda_clinica`. A *trigger* `auditar_agenda` registra a criação e as alterações de situação do agendamento. Um índice único parcial impede dois agendamentos ativos para o mesmo médico, data e horário. A reserva também é feita por atualização condicional dentro da mesma transação que cria o agendamento. A *procedure* `fechar_faturamento` consolida procedimentos em uma cobrança por consulta, com bloqueio das consultas elegíveis e proteção contra duplicidade.
 
@@ -68,7 +70,7 @@ Exemplo de documento. O MongoDB armazena `arquivo` como conteúdo binário quand
 }
 ```
 
-O MongoDB cria a coleção e o índice único de `_id` na primeira escrita. A rotina [prontuario.py](../backend/app/prontuario.py) usa `replace_one(..., upsert=True)` na gravação e `find_one(...)` na leitura. O Redis usa `GET` e `SET` com expiração.
+O comando `python -m app.manage init-mongo` cria a coleção explicitamente na inicialização da API. O MongoDB cria seu índice único de `_id` junto com a coleção. O comando aceita uma coleção já existente e preserva seus documentos. A rotina [prontuario.py](../backend/app/prontuario.py) usa `replace_one(..., upsert=True)` na gravação e `find_one(...)` na leitura. O Redis usa `GET` e `SET` com expiração.
 
 ## Consistência e permissões
 

@@ -35,7 +35,7 @@ def migrate():
             conn.execute("INSERT INTO schema_migrations(version) VALUES ('001_auth')")
         conn.execute((SQL / 'migrations/003_medico_cpf.sql').read_text(encoding='utf-8'))
         for version in ('004_tabelas_operacionais', '005_campos_administrativos', '006_operacoes_uml',
-                        '007_prontuario'):
+                        '007_prontuario', '008_telefone_usuario'):
             if not conn.execute('SELECT 1 FROM schema_migrations WHERE version=%s', (version,)).fetchone():
                 conn.execute((SQL / f'migrations/{version}.sql').read_text(encoding='utf-8'))
                 conn.execute('INSERT INTO schema_migrations(version) VALUES (%s)', (version,))
@@ -44,10 +44,15 @@ def migrate():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['migrate', 'seed', 'create-admin'])
+    parser.add_argument('command', choices=['migrate', 'seed', 'create-admin', 'init-mongo'])
     args = parser.parse_args()
     if args.command == 'migrate':
         migrate()
+    elif args.command == 'init-mongo':
+        from .prontuario import inicializar_colecao
+
+        inicializar_colecao()
+        print('Coleção prontuarios pronta.')
     elif args.command == 'seed':
         with connect() as conn:
             with ClientCursor(conn) as cursor:

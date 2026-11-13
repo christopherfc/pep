@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import Field, StringConstraints
 from typing import Annotated
 from pymongo import MongoClient
-from pymongo.errors import PyMongoError
+from pymongo.errors import CollectionInvalid, OperationFailure, PyMongoError
 from redis import Redis
 from redis.exceptions import RedisError
 
@@ -47,6 +47,17 @@ def documentos():
         timeoutMS=3000,
     )
     return cliente[os.environ["MONGO_DB"]].prontuarios
+
+
+def inicializar_colecao():
+    colecao = documentos()
+    try:
+        colecao.database.create_collection(colecao.name)
+    except CollectionInvalid:
+        return
+    except OperationFailure as exc:
+        if exc.code != 48:  # A coleção pode ter sido criada por outro processo.
+            raise
 
 
 @lru_cache

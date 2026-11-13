@@ -18,7 +18,7 @@ docker compose exec api python -m app.manage seed
 - Documentação da API: http://localhost:8000/docs
 - Verificação dos três bancos: http://localhost:8000/health/ready
 
-As migrações são aplicadas na inicialização da API. O seed é opcional e usa dados fictícios. As novas contas de exemplo usam a senha `PepDemo123!`.
+Na inicialização, a API aplica as migrações PostgreSQL e cria a coleção `prontuarios` no MongoDB. A criação também pode ser executada com `docker compose exec api python -m app.manage init-mongo`. O seed é opcional e usa dados fictícios. As novas contas de exemplo usam a senha `PepDemo123!`.
 
 O arquivo `002_uuid_ids.sql` serve apenas para converter bases antigas com IDs inteiros. Para uma instalação nova, siga os comandos acima.
 

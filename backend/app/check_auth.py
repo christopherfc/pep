@@ -55,7 +55,7 @@ def run():
         request('/usuarios',cadastro,token,409)
         with connect() as conn:
             medico = conn.execute(
-                '''SELECT m.id_medico, u.name, m.crm, m.telefone, m.cpf
+                '''SELECT m.id_medico, u.name, m.crm, u.telefone, m.cpf
                    FROM medico m JOIN usuario u USING (id_usuario)
                    WHERE m.id_usuario = %s''',
                 (user['id_usuario'],),

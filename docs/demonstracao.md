@@ -30,18 +30,18 @@ A carga cria 100 mil consultas e 100 mil prontuários fictícios. Ela usa chaves
 
 ## Resultados observados
 
-Uma execução local em Docker com 100 mil consultas e prontuários.
+Execução local em Docker da versão final, com 100 mil consultas no PostgreSQL e 100 mil prontuários no MongoDB. O vídeo registra uma execução anterior do mesmo benchmark.
 
 | Consulta por data no PostgreSQL | Mediana de 10 execuções | Plano |
 | --- | ---: | --- |
-| Com índice | 0,017 ms | Index Scan |
-| Sem índice | 4,591 ms | Seq Scan |
+| Com índice | 0,024 ms | Index Scan |
+| Sem índice | 6,671 ms | Seq Scan |
 
 O teste mede `EXPLAIN ANALYZE` e desabilita os planos de acesso por índice apenas durante a comparação.
 
 | Leitura de prontuários | p50 | p95 | Leituras/s | Acertos no cache |
 | --- | ---: | ---: | ---: | ---: |
-| Sem cache | 2,757 ms | 4,815 ms | 2.609,5 | 0 de 1.000 |
-| Com cache | 1,325 ms | 3,048 ms | 5.025,2 | 1.000 de 1.000 |
+| Sem cache | 2,986 ms | 5,738 ms | 2.339,9 | 0 de 1.000 |
+| Com cache | 1,494 ms | 3,136 ms | 4.676,4 | 1.000 de 1.000 |
 
 O teste executa a rotina de leitura usada pela API, com oito trabalhadores e 1.000 leituras de 20 prontuários. O cenário com Redis usa cache aquecido. As medições cobrem o acesso aos dados. O teste funcional exercita também a API HTTP.

@@ -152,9 +152,9 @@ def register(data: Cadastro, actor=Depends(administrador)):
                 VALUES (%s,%s,%s,'ativo',%s,%s) RETURNING id_usuario,name,email,perfil,status''',
                 (data.name.strip(), data.email, data.perfil, hash_password(data.senha), data.telefone)).fetchone()
             if data.perfil == 'medico':
-                medico = conn.execute('''INSERT INTO medico (id_usuario,crm,telefone,cpf)
-                    VALUES (%s,%s,%s,%s) RETURNING id_medico''',
-                    (user['id_usuario'], data.crm.strip(), data.telefone, data.cpf)).fetchone()
+                medico = conn.execute('''INSERT INTO medico (id_usuario,crm,cpf)
+                    VALUES (%s,%s,%s) RETURNING id_medico''',
+                    (user['id_usuario'], data.crm.strip(), data.cpf)).fetchone()
                 if data.id_especialidade is not None:
                     especialidade = data.id_especialidade
                     vinculo = conn.execute("""INSERT INTO medico_especialidade (id_medico, id_especialidade)

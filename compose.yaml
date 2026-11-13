@@ -18,7 +18,7 @@ services:
       dockerfile: Dockerfile
     init: true
     restart: unless-stopped
-    command: ["sh", "-c", "python -m app.manage migrate && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+    command: ["sh", "-c", "python -m app.manage migrate && python -m app.manage init-mongo && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
     environment:
