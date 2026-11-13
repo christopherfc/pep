@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AppLayout } from "../layouts/AppLayout";
 import { AcaoAgendamento, EstadoDados, Tabela } from "../components/Operacoes";
 import { AdicionarProcedimento, Horarios } from "../components/Manutencao";
@@ -7,7 +7,8 @@ import { useDados } from "../hooks/useDados";
 import { diaBr, situacoes, type Agendamento, type Painel } from "../services/operacoes";
 
 export default function PainelMedico() {
-  const [data, setData] = useState("");
+  const [params, setParams] = useSearchParams();
+  const data = params.get("data") ?? "";
   const [versao, setVersao] = useState(0);
   const painel = useDados<Painel>("painel", versao);
   const agenda = useDados<Agendamento[]>(data ? "agendamentos?" + new URLSearchParams({ data }) : null, versao);
@@ -16,7 +17,8 @@ export default function PainelMedico() {
     <div className="page-heading"><h1>Minha agenda</h1></div>
     <EstadoDados loading={painel.loading || agenda.loading} error={painel.error || agenda.error} />
     <section className="card">
-      <label>Data<input type="date" value={data || painel.data?.hoje || ""} onChange={event => setData(event.target.value)} /></label>
+      <label>Data<input type="date" value={data || painel.data?.hoje || ""}
+        onChange={event => setParams(event.target.value ? { data: event.target.value } : {})} /></label>
     </section>
     {dia && <>
       <div className="stats stats-medical">
@@ -30,19 +32,22 @@ export default function PainelMedico() {
       <section className="card">
         <h2>Agenda de {diaBr(data || painel.data?.hoje || "")}</h2>
         {dia.length ? <Tabela colunas={["Horário", "Paciente", "Situação", "Procedimentos", "Ações"]}>
-          {dia.map(item => <tr key={item.id_agendamento}>
+          {dia.map(item => {
+            const linkProntuario = item.id_consulta ? "/prontuario/" + item.id_consulta + "?data=" + item.data : undefined;
+            return <tr key={item.id_agendamento}>
             <td>{item.horario.slice(0, 5)}</td><td>{item.paciente}</td><td>{situacoes[item.status] ?? item.status}</td>
             <td>{item.procedimentos ?? "—"}</td>
             <td>
               <Link to={"/historico?paciente=" + item.id_paciente}>Ver histórico</Link>
-              {item.id_consulta && <Link to={"/prontuario/" + item.id_consulta}>
-                {item.tem_prontuario ? "Ver prontuário" : "Registrar prontuário"}
-              </Link>}
+              {linkProntuario && (item.tem_prontuario || item.status !== "em_atendimento") &&
+                <Link to={linkProntuario}>{item.tem_prontuario ? "Ver prontuário" : "Registrar prontuário"}</Link>}
               <AcaoAgendamento id={item.id_agendamento} status={item.status} temProntuario={item.tem_prontuario}
+                linkProntuario={linkProntuario}
                 atualizar={() => setVersao(v => v + 1)} />
               {item.id_consulta && item.aceita_procedimento && <AdicionarProcedimento id={item.id_consulta} atualizar={() => setVersao(v => v + 1)} />}
             </td>
-          </tr>)}
+          </tr>;
+          })}
         </Tabela> : <p>Nenhum atendimento nesta data.</p>}
       </section>
     </>}

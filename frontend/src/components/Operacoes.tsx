@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { salvar } from "../services/operacoes";
 
 export function EstadoDados({ loading, error, empty }: { loading: boolean; error?: string; empty?: string }) {
@@ -52,8 +53,8 @@ export function Cadastro({ children, enviar, concluido, label = "Salvar cadastro
   </form>;
 }
 
-export function AcaoAgendamento({ id, status, temProntuario, atualizar }: {
-  id: string; status: string; temProntuario: boolean; atualizar: () => void;
+export function AcaoAgendamento({ id, status, temProntuario, linkProntuario, atualizar }: {
+  id: string; status: string; temProntuario: boolean; linkProntuario?: string; atualizar: () => void;
 }) {
   const [erro, setErro] = useState("");
   const [ocupado, setOcupado] = useState(false);
@@ -78,9 +79,12 @@ export function AcaoAgendamento({ id, status, temProntuario, atualizar }: {
     {status === "pendente" && <button type="button" disabled={ocupado} onClick={() => alterar("confirmado")}>Confirmar</button>}
     {status !== "em_atendimento" && <button type="button" disabled={ocupado} onClick={() => alterar("em_atendimento")}>Iniciar</button>}
     {status === "em_atendimento"
-      ? <button type="button" disabled={ocupado || !temProntuario} onClick={() => alterar("realizado")}>Concluir</button>
+      ? temProntuario
+        ? <button type="button" disabled={ocupado} onClick={() => alterar("realizado")}>Concluir</button>
+        : <p>{linkProntuario
+          ? <Link to={linkProntuario}>Registrar prontuário</Link>
+          : "O médico precisa salvar o prontuário"} para concluir.</p>
       : <button type="button" disabled={ocupado} onClick={() => setCancelando(!cancelando)}>{cancelando ? "Voltar" : "Cancelar"}</button>}
-    {status === "em_atendimento" && !temProntuario && <p>Prontuário pendente</p>}
     {cancelando && <form onSubmit={event => {
       event.preventDefault();
       void alterar("cancelado", String(new FormData(event.currentTarget).get("motivo")));

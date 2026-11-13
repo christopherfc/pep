@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { AppLayout } from "../layouts/AppLayout";
 import { Cadastro, EstadoDados } from "../components/Operacoes";
@@ -23,6 +23,9 @@ type ProntuarioDaConsulta = {
 
 export default function Prontuario() {
   const { consulta } = useParams();
+  const [params] = useSearchParams();
+  const diaAgenda = params.get("data");
+  const agenda = diaAgenda ? "/painel-medico?" + new URLSearchParams({ data: diaAgenda }) : "/painel-medico";
   const [versao, setVersao] = useState(0);
   const [erroAnexo, setErroAnexo] = useState("");
   const caminho = "consultas/" + consulta + "/prontuario";
@@ -47,7 +50,7 @@ export default function Prontuario() {
   return <AppLayout medical>
     <div className="page-heading"><h1>Prontuário da consulta</h1></div>
     <EstadoDados loading={loading} error={error} />
-    <Link to="/painel-medico">Voltar à agenda</Link>
+    <Link to={agenda}>Voltar à agenda</Link>
     {data && <section className="card">
       <h2>{data.paciente}</h2>
       <Link to={"/historico?paciente=" + data.id_paciente}>Ver histórico do paciente</Link>
